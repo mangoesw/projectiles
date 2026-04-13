@@ -29,10 +29,11 @@ const abstol = 5e-6
 
 function C_d(Re)
     # https://pages.mtu.edu/~fmorriso/DataCorrelationForSphereDrag2016.pdf
+    # Only for spheres
     24/Re +
-    (2.6*(Re/5.0)) / (1 + (Re/5.0)^1.52) +
-    (0.411*(Re/(2.63 * 10^5))^-7.94) / (1 + (Re/(2.63 * 10^5))^-8.0) +
-    (0.25*(Re/10^6)) / (1 + (Re/10^6))
+    (2.6*Re/5)/(1 + (Re/5)^1.52) +
+    (0.411*(Re/2.63e5)^-7.94)/(1 + (Re/2.63e5)^-8) +
+    (Re/4e6) / (1 + Re/1e6)
 end
 
 function ballmotion(u, p, t)
@@ -48,8 +49,8 @@ function ballmotion(u, p, t)
 
     dx = vx
     dy = vy
-    dvx = (-C * vx * speed - p.S0 * omega * vy) / mass
-    dvy = -g - (C * vy * speed + p.S0 * omega * vx) / mass
+    dvx = (-C*vx*speed - p.S0*omega*vy)/mass
+    dvy = -g - (C*vy*speed + p.S0*omega*vx)/mass
     domega = omega * (-air * speed^2 * S * p.k / I)
     StaticArrays.SA[dx, dy, dvx, dvy, domega]
 end
@@ -68,8 +69,8 @@ function objective(angle, p)
     odesol = ode(p.v0, angle, p.goalHeight)
     dydx = odesol.u[end][4] / odesol.u[end][3]
     derivative = dydx - goal_dydx
-    # displacement = odesol.u[end][2] - p.goalHeight
-    derivative
+    displacement = odesol.u[end][2] - p.goalHeight
+    derivative + displacement
 end
 
 function point(v0, goalHeight)
@@ -80,14 +81,6 @@ function point(v0, goalHeight)
     finalsol = ode(v0, angle, goalHeight)
     d = finalsol.u[end][1]
     (d=d, angle=angle, obj=sol.resid)
-end
-
-function regression(data)
-    ys = QuantityArray(data.ys, m)
-    ds = QuantityArray(data.ds, m)
-    v0s = QuantityArray(data.v0s, m/s)
-    angles = QuantityArray(data.angles, rad)
-    
 end
 
 function run(doplot)
