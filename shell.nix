@@ -1,14 +1,16 @@
 let
   # https://status.nixos.org.
-  pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/6201e203d09599479a3b3450ed24fa81537ebc4e.tar.gz") {};
+  pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/4c1018dae018162ec878d42fec712642d214fdfa.tar.gz") {};
   julia = pkgs.julia-bin.withPackages [
     "SimpleNonlinearSolve"
-    "DifferentialEquations"
+    # "DifferentialEquations"
+    "OrdinaryDiffEq"
     "MLJ"
     "DynamicQuantities"
     "SymbolicRegression"
-    "StaticArrays"
+    # "StaticArrays"
     "Plots"
+    "ModelingToolkit"
   ];
 in pkgs.mkShell {
   buildInputs = [ julia ];
